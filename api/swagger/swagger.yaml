@@ -1,0 +1,157 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: my State App
+# during dev, should point to your local machine
+host: localhost:10010
+# basePath prefixes all resource paths 
+basePath: /
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+paths:
+  /states:
+    x-swagger-router-controller: state
+    get:
+      tags:
+        - state
+      operationId: getStateList
+      summary: Get state list
+      description: Get state list
+      responses:
+        '200':
+          description: State list
+          schema:
+            $ref: "#/definitions/StateListResponse"
+        default:
+          description: An error occurred
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    post:
+      tags:
+        - state
+      operationId: stateDataUpload
+      consumes:
+        - multipart/form-data
+      summary: Upload state data
+      description: Upload state data.
+      parameters:
+        - name: images
+          in: formData
+          description: Upload state data json.
+          required: true
+          type: file
+          collectionFormat: multi
+      responses:
+        '200':
+          description: State data uploaded successfully
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+        default:
+          description: An error occurred
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  
+  /state/{stateId}:
+    x-swagger-router-controller: state
+    get:
+      tags:
+        - state
+      operationId: getState
+      summary: Get an state details
+      description: Get an state details
+      parameters:
+        - name: stateId
+          type: string
+          pattern: ^[0-9a-fA-F]{24}$
+          required: true
+          in: path
+      responses:
+        '200':
+          description: Get state details successfully
+          schema:
+            allOf:
+              - $ref: "#/definitions/SuccessResponse"
+              - properties:
+                  data:
+                    type: object
+                    items:
+                      $ref: "#/definitions/StateResponse"
+        default:
+          description: An error occurred
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  SuccessResponse:
+    required:
+      - statusCode
+      - message
+      - data
+    properties:
+      statusCode:
+        type: number
+      message:
+        type: string
+      data:
+        type: ["array", "object"]
+
+  ErrorResponse:
+    required:
+      - statusCode
+      - error
+      - message
+    properties:
+      statusCode:
+        type: number
+      error:
+        type: string
+      message:
+        type: string
+
+  StateListResponse:
+    required:
+      - statusCode
+      - message
+      - data
+    properties:
+      statusCode:
+        type: number
+      message:
+        type: string
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/StateResponse'
+  
+  StateResponse:
+    properties:
+      state_name:
+        type: string
+        description: State's name
+      population:
+        type: number
+        description: State's name
+      area:
+        type: number
+        description: State's name
+      gdp_per_capita:
+        type: number
+        description: State's name
+      literacy_rate:
+        type: number
+        description: State's name
+      gender_ratio:
+        type: number
+        description: State's name
