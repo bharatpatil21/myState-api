@@ -7,7 +7,8 @@ let customError = require('../shared/custom-error');
 
 module.exports = {
 	getStateList: getStateList,
-	getState: getState
+	getState: getState,
+	stateDataUpload: stateDataUpload
 };
 
 function getStateList(cb) {
@@ -38,9 +39,33 @@ function getState(stateId, cb) {
 			if (!stateObj) {
 				cb(new customError({ 'custom_error': 'notFound', 'message': 'State not found.' }));
 			} else {
-				console.log('stateong---------',stateObj)
 				return stateObj.formatResponse(stateObj.toObject());
 			}
+		})
+		.then((res) => cb(null, res))
+		.catch((err) => cb(err));
+}
+
+function stateDataUpload(data, cb) {
+	return StatesModel.remove()
+		.then(() => {
+			return Promise.map(data, (item) => {
+				let data = {
+					state_name: item.stateName,
+					population: item.population,
+					area: item.area,
+					gdp_per_capita: item.gdpPerCapita,
+					literacy_rate: item.literacyRate,
+					gender_ratio: item.genderRatio
+				};
+				let stateUploadObj = new StatesModel(data);
+				// Insert detail in states collection
+				return stateUploadObj.saveAsync();
+			})
+				.then(() => {
+					return this.getStateListAsync();
+				})
+				.catch((err) => cb(err));
 		})
 		.then((res) => cb(null, res))
 		.catch((err) => cb(err));

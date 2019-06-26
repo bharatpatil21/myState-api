@@ -1,5 +1,5 @@
 'use strict';
-var multer  =   require('multer');
+var multer = require('multer');
 
 let statesService = require('../../services/states');
 let commonService = require('../../services/common');
@@ -29,19 +29,9 @@ function getState(req, res, next) {
 
 
 function stateDataUpload(req, res, next) {
-	var storage = multer.diskStorage({
-		destination: function (req, file, callback) {
-			callback(null, './upload');
-		},
-		filename: function (req, file, callback) {
-			callback(null, file.fieldname + '-' + Date.now());
-		}
-	});
-	var upload = multer({ storage: storage }).single('iamges');
-	upload(req, res, function (err) {
-		if (err) {
-			return res.end("Error uploading file.");
-		}
-		res.end(commonService.resJson('State fetched successfully.', {}));
-	});
+	statesService.stateDataUploadAsync(req.body)
+		.then((result) => {
+			res.json(commonService.resJson('State fetched successfully.', result));
+		})
+		.catch(next);
 }
